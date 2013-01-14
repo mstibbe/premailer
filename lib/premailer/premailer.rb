@@ -297,16 +297,16 @@ protected
         if tag.to_s.strip =~ /^\<link/i && tag.attributes['href'] && media_type_ok?(tag.attributes['media']) && @options[:include_link_tags]
           # A user might want to <link /> to a local css file that is also mirrored on the site
           # but the local one is different (e.g. newer) than the live file, premailer will now choose the local file
-          
+
           if tag.attributes['href'].to_s.include? @base_url.to_s and @html_file.kind_of?(String)
             link_uri = File.join(File.dirname(@html_file), tag.attributes['href'].to_s.sub!(@base_url.to_s, ''))
           end
-          
+
           # if the file does not exist locally, try to grab the remote reference
           if link_uri.nil? or not File.exists?(link_uri)
             link_uri = Premailer.resolve_link(tag.attributes['href'].to_s, @html_file)
           end
-          
+
           if Premailer.local_data?(link_uri)
             $stderr.puts "Loading css from local file: " + link_uri if @options[:verbose]
             load_css_from_local_file!(link_uri)
@@ -361,7 +361,7 @@ public
     doc.search('a').each do|el|
       href = el.attributes['href'].to_s.strip
       next if href.nil? or href.empty?
-      
+
       next if href[0,1] =~ /[\#\{\[\<\%]/ # don't bother with anchors or special-looking links
 
       begin
@@ -468,7 +468,7 @@ public
     elsif base_path.kind_of?(URI)
       resolved = base_path.merge(path)
       Premailer.canonicalize(resolved)
-    elsif base_path.kind_of?(String) and base_path =~ /^(http[s]?|ftp):\/\//i
+    elsif base_path.kind_of?(String) and base_path =~ /\A(http[s]?|ftp):\/\//i
       resolved = URI.parse(base_path)
       resolved = resolved.merge(path)
       Premailer.canonicalize(resolved)
@@ -482,7 +482,7 @@ public
   # IO objects return true, as do strings that look like URLs.
   def self.local_data?(data)
     return true if data.is_a?(IO) || data.is_a?(StringIO)
-    return false if data =~ /^(http|https|ftp)\:\/\//i
+    return false if data =~ /\A(http|https|ftp)\:\/\//i
     true
   end
 
